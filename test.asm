@@ -9,6 +9,8 @@
 	msg_arr:	.asciiz		"Array: "
 	msg_space: 	.asciiz 	" "
 	msg_newLine: 	.asciiz 	"\n"
+	msg_varA1:	.asciiz		"a["
+	msg_varA2:	.asciiz		"] = "
 	msg_output:	.asciiz		"1. Output array."
 	msg_sumarr:	.asciiz		"2. Sum of array."
 	msg_primes:	.asciiz		"3. Primes in array."
@@ -19,9 +21,6 @@
 .text
 
 
-.globl main
-
-
 inputSize:
 	la 	$a0, msg_askSize 		#Ask user to enter size of array.
 	li 	$v0, 4
@@ -30,7 +29,7 @@ inputSize:
 	syscall
 	move 	$s0, $v0 		#Size of array is saved to $s0.
 	
-	slti	$t0, 0, $s0
+	slt	$t0, $0, $s0
 	beq	$t0, $0, inputSize
 	
 	move 	$s1, $s0 		#Save value of $s0 to $s1 to do not change value of $s0.	
@@ -41,6 +40,16 @@ inputSize:
 inputLoop:
 	beq 	$s1, 0, doSth
 	
+	la	$a0, msg_varA1
+	li	$v0, 4
+	syscall
+	sub	$t1, $s0, $s1
+	move	$a0, $t1
+	li	$v0, 1
+	syscall
+	la	$a0, msg_varA2
+	li	$v0, 4
+	syscall
 	li 	$v0, 5
 	syscall
 	sw 	$v0, ($t0)
