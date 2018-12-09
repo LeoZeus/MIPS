@@ -1,85 +1,333 @@
-#Quick sort
-#Created 12/01/2018
-#By Zrus & Reigne
-
+#Array
+#Created 05/12/18
+#By Zrus & Diana Sensei
 
 .data
+	msg_dev:	.asciiz		"Created by Zrus & Diana.S\n"
+	size:		.space		4
 	arr: 		.word 		1000
+	prime_arr:	.word		1000
 	msg_askSize: 	.asciiz 	"Enter size of array: "	
-	msg_arr:	.asciiz		"Array: "
+	msg_askElm:	.asciiz		"Enter number: "
 	msg_space: 	.asciiz 	" "
 	msg_newLine: 	.asciiz 	"\n"
 	msg_varA1:	.asciiz		"a["
 	msg_varA2:	.asciiz		"] = "
-	msg_output:	.asciiz		"1. Output array."
-	msg_sumarr:	.asciiz		"2. Sum of array."
-	msg_primes:	.asciiz		"3. Primes in array."
-	msg_findMax:	.asciiz		"4. Max of array."
-	msg_findX:	.asciiz		"5. Find element."
-	msg_exit:	.asciiz		"6. Exit."
+	msg_askOpt:	.asciiz		"Choose: "
+	msg_opt1:	.asciiz		"1. Output array.\n"
+	msg_opt2:	.asciiz		"2. Sum of array.\n"
+	msg_opt3:	.asciiz		"3. Primes in array.\n"
+	msg_opt4:	.asciiz		"4. Max of array.\n"
+	msg_opt5:	.asciiz		"5. Find element.\n"
+	msg_opt6:	.asciiz		"6. Exit.\n"
+	msg_exit:	.asciiz		"Program finished.\n"
+
+#Rules:
+#Parameters: $a0, $a1, $a2.
+#Local var: register $t and $s.
+#Return value store at: $v0, $v1.
+#Detail:
+#	+ $a0, $t0: store address of array.
+#	+ $a1, $t1: store size of array.
+#	+ $a2: store choice of user.
+#	+ $t2, $s2 (, $a2): use to check conditions.
 
 .text
-
-
-inputSize:
-	la 	$a0, msg_askSize 		#Ask user to enter size of array.
-	li 	$v0, 4
-	syscall
-	li 	$v0, 5
-	syscall
-	move 	$s0, $v0 		#Size of array is saved to $s0.
-	
-	slt	$t0, $0, $s0
-	beq	$t0, $0, inputSize
-	
-	move 	$s1, $s0 		#Save value of $s0 to $s1 to do not change value of $s0.	
-	move	$s2, $s0		#Same to $s1
-	la 	$t0, arr		#Save address of arr to $t0 to handle.
-	
-
-inputLoop:
-	beq 	$s1, 0, doSth
-	
-	la	$a0, msg_varA1
+.globl main
+main:					#Print info of developer.
+	la	$a0, msg_dev
 	li	$v0, 4
 	syscall
-	sub	$t1, $s0, $s1
-	move	$a0, $t1
+
+input_size_func:			#Input size of the array, loop while user enter inconsonant number.
+	la	$a0, msg_askSize	#Ask user for input size.
+	li	$v0, 4
+	syscall
+	li	$v0, 5
+	syscall
+	move	$a1, $v0
+
+	slt	$t0, $0, $a1		#If not suitable, ask user input again.
+	beq	$t0, 0, input_size_func
+
+	la	$a0, arr		#Prepare data for next action.
+	sb	$a1, size
+
+	add	$t0, $a0, $0
+	add	$t1, $a1, $0
+
+input_elm_func:				#Input elements base on size n.
+	beq	$t1, 0, menu_func	#Loop til i = size.
+
+	la	$a0, msg_varA1		#Enter elements.
+	li	$v0, 4
+	syscall
+	sub	$s0, $a1, $t1		#Print 'a[i]'.
+	move	$a0, $s0
 	li	$v0, 1
 	syscall
 	la	$a0, msg_varA2
 	li	$v0, 4
 	syscall
-	li 	$v0, 5
+	li 	$v0, 5			#Scan.
 	syscall
-	sw 	$v0, ($t0)
-	subi 	$s1, $s1, 1
+	sw 	$v0, ($t0)		#Store in array.
+	subi 	$t1, $t1, 1
 	addi 	$t0, $t0, 4
 
-	b inputLoop
+	j	input_elm_func
 
-
-doSth:
-	la 	$a0, msg_newLine
-	li 	$v0, 4
+menu_func:				#Menu, ask user to choose action needed.
+	la	$a0, msg_newLine
+	li	$v0, 4
 	syscall
-	la	$t0, arr
+	la	$a0, msg_opt1		#Output array.
+	li	$v0, 4
+	syscall
+	la	$a0, msg_opt2		#Sum of array.
+	li	$v0, 4
+	syscall
+	la	$a0, msg_opt3		#Primes.
+	li	$v0, 4
+	syscall
+	la	$a0, msg_opt4		#Print max in array.
+	li	$v0, 4
+	syscall
+	la	$a0, msg_opt5		#Return entered value in array.
+	li	$v0, 4
+	syscall
+	la	$a0, msg_opt6		#End program.
+	li	$v0, 4
+	syscall
+	la	$a0, msg_newLine
+	li	$v0, 4
+	syscall
+	la	$a0, msg_askOpt
+	li	$v0, 4
+	syscall
+	li	$v0, 5			#Get choice.
+	syscall
+	move	$s0, $v0
 
+	slti	$t0, $s0, 1		#If choice is not suitable, ask user choose again.
+	bne	$t0, $0, menu_func
+	addi	$t0, $0, 6
+	slt	$t0, $t0, $s0 
+	bne	$t0, $0, menu_func
 
-outputLoop:
-	beq	$s2, 0, doSthelse
+	add	$a2, $s0, $0		#Store the choice.
 
-	lw 	$t2, ($t0)
-	move	$a0, $t2
+	move	$a0, $0
+	move	$a1, $0
+
+switch:
+case_1:					#Output array.
+	addi	$t2, $a2, -1		#Check choice.
+	bne	$t2, $0, case_2		#If not equal to 1 go to case 2.
+	la	$a0, arr		#Prepare data.
+	lb	$a1, size
+	jal	output_func		#Call output and store $ra.
+	j	menu_func		#Back to menu_func to choose needed action again.
+
+case_2:					#Return sum of elements.
+	addi	$t2, $a2, -2		#Check choice.
+	bne	$t2, $0, case_3		#If not equal to 2 go to case 3.
+	la	$a0, arr		#Prepare data.
+	lb	$a1, size
+	jal	sum_func		#Call sum_func and store $ra.
+	move	$a0, $v0		#Print returned value from sum_func.
+	li	$v0, 1
+	syscall
+	la	$a0, msg_newLine
+	li	$v0, 4
+	syscall
+	j	menu_func
+
+case_3:					#Return array of primes exist in main array.
+	addi	$t2, $a2, -3		#Check choice.
+	bne	$t2, $0, case_4		#If not equal to 3 go to case 4.
+	la	$a0, arr		#Prepare.
+	lb	$a1, size
+	jal	primes_func		#Call primes_func and store $ra.
+	move	$a0, $v0		#Get returned value from primes_func to print out primes array.
+	move	$a1, $v1
+	jal	output_func		#Print primes array.
+	j	menu_func
+
+case_4:					#Return max value in array.
+	addi	$t2, $a2, -4		#Check choice.
+	bne	$t2, $0, case_5
+	la	$a0, arr
+	lb	$a1, size
+	jal	find_max_func		#Call find_max_func
+	move	$a0, $v0
+	li	$v0, 1
+	syscall				#Print out value returned.
+	la	$a0, msg_newLine
+	li	$v0, 4
+	syscall
+	j	menu_func
+
+case_5:					#Return index of element needed.
+	addi	$t2, $a2, -5
+	bne	$t2, $0, case_6		
+	la	$a0, msg_askElm		#Ask user the value needed.
+	li	$v0, 4
+	syscall
+	li	$v0, 5			#Get that value.
+	syscall
+	move	$a2, $v0
+	la	$a0, arr
+	lb	$a1, size
+	jal	find_elm_func
+	move	$a0, $v0
+	li	$v0, 1
+	syscall				#Print out the index of the value entered (if exist).
+	la	$a0, msg_newLine
+	li	$v0, 4
+	syscall
+	j	menu_func
+
+case_6:					#End program.
+	j	exit_func
+
+output_func:				#Prepare data.
+	add	$t0, $a0, $0
+	add	$t1, $a1, $0
+
+output:					#Loop til end of array.
+	beq	$t1, 0, stop_output
+
+	lw 	$s0, ($t0)		#Load each element from array to print.
+	move	$a0, $s0
 	li	$v0, 1
 	syscall
 	la	$a0, msg_space
 	li 	$v0, 4
 	syscall
-	subi	$s2, $s2, 1
+	subi	$t1, $t1, 1		#Increase index.
 	addi	$t0, $t0, 4
 
-	b outputLoop
+	j	output
 
+stop_output:
+	la	$a0, msg_newLine
+	li	$v0, 4
+	syscall
+	jr	$ra			#Go back to next step at case 1.
 
-doSthelse:
+sum_func:				#Prepare data.
+	add	$t0, $a0, $0
+	add	$t1, $a1, $0
+	add	$v0, $0, $0
+
+sum:
+	beq	$t1, 0, stop_sum	#Loop til end of array.
+	
+	lw	$s0, ($t0)
+	add	$v0, $v0, $s0		#Add to $v0 as sum of array.
+
+	subi	$t1, $t1, 1
+	addi	$t0, $t0, 4
+
+	j	sum			#Loop.
+
+stop_sum:
+	jr	$ra			#Back to case 2.
+
+primes_func:				#Prepare data.
+	add	$t0, $a0, $0
+	add	$t1, $a1, $0
+	la	$v0, prime_arr
+	addi	$v1, $0, 0
+
+check_prime:
+	beq	$t1, 0, stop_check	#Loop to check each element in array til end of array.
+	
+	lw	$a0, ($t0)
+
+	slti	$s0, $a0, 2		#Check value of element < 2 is not prime.
+	bne	$s0, $0, not_prime
+
+	addi	$a2, $a0, -1		#If that value >= 2, store value - 1 to a res to check prime.
+
+check:
+	beq	$a2, 1, prime		#Loop from 1 to value - 1.
+	
+	div	$a0, $a2		#value / i (know as $a2).
+	mfhi	$s0			#Move from high (this resgister store remainder of value / i) to $s0.
+	beq	$s0, $0, not_prime	#If $s0 == 0, that number is not prime.
+	subi	$a2, $a2, 1		#If $s0 != 0, continue to divide to check.
+	
+	j	check
+
+prime:
+	sw	$a0, ($v0)		#If that number is prime, store to primes array.
+	addi	$v1, $v1, 1		#Increase size of primes array.
+	addi	$v0, $v0, 4		#Go to next memory block.
+		
+not_prime:				#If that nubmer is not prime, increase index
+	subi	$t1, $t1, 1		#and go to next memory block to get value from its.
+	addi	$t0, $t0, 4
+	j	check_prime
+
+stop_check:				#End of array, store address of primes array to $v0
+	la	$v0, prime_arr		#and go back to case 3 to print out primes array.
+	jr	$ra
+
+find_max_func:
+	add	$t0, $a0, $0		#Prepare data.
+	add	$t1, $a1, $0
+
+	lw	$s0, ($t0)		#Get first element in array as max value.
+	add	$v0, $s0, $0
+	subi	$t1, $t1, 1		#Index start from 1.
+	addi	$t0, $t0, 4
+
+find_max:
+	beq	$t1, 0, stop_find_max	#Start check form element 1 (a[1]), for max as a[0].
+	
+	lw	$s0, ($t0)
+	subi	$t1, $t1, 1
+	addi	$t0, $t0, 4
+	slt	$s1, $v0, $s0
+	bne	$s1, $0, change_max	#If max < a[i], change max to a[i].
+	b 	find_max
+
+change_max:
+	add	$v0, $s0, $0
+	j	find_max
+
+stop_find_max:
+	jr	$ra
+
+find_elm_func:
+	add	$t0, $a0, $0		#Prepare data.
+	add	$t1, $a1, $0
+	add	$t2, $a2, $0
+
+find_elm:
+	beq	$t1, 0, stop_find_elm	#Loop til end of array.
+
+	lw	$s0, ($t0)
+	beq	$t2, $s0, stop_find_elm	#If the value entered is equal to a[i], stop find.
+	subi	$t1, $t1, 1
+	addi	$t0, $t0, 4
+	j	find_elm
+
+stop_find_elm:
+	beq	$t1, 0, not_found	#If index == 0 (know as end of array) is know as the value does not exist in array, jump to not found.
+	sub	$t1, $a1, $t1
+	add	$v0, $t1, $0
+	jr	$ra			#Back to next step at case 5 to print out index of value.
+
+not_found:				#If not found, return -1.
+	addi	$v0, $0, -1
+	jr	$ra
+
+exit_func:
+	la	$a0, msg_exit		#Finish program.
+	li	$v0, 4
+	syscall
+	li	$v0, 10
+	syscall
